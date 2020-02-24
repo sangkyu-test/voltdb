@@ -1,48 +1,11 @@
-테스트 환경
-1. 사무실내 테스트 PC에서 VM을 올린 후(Master 및 Worker node) K8s클러스터 구성
-2. Master에 NFS 서버를 설치하여 Storage Class를 통해 Dynamic하게 PV가 생성될 수 있도록 구성 (StatefulSet 지원을 위한 설정)
-3. VoltDB에서 제공한 K8S 설치 지원용 스크립트를 사용하여 Docker 이미지 빌드 및 StatefulSet Yaml 파일 생성 및 VoltDB 구성
-  - 위과정은 단일 스크립트를 통해 지원되며 노드수나 할당될 CPU/메모리등이 Config 파일을 통해 명시하도록 되어 있습니다.
-  - VoltDB 배포판중에서 K8S와 관련된 폴더는 압축하여 첨부하였습니다. 폴더 안애 voltdb-k8s-utils.sh 가 위에 언급한 스크립트이고 설정화일은 config_template.cfg 입니다.
-  - Docker 이미지 빌드시에 폴더내에 있는 Dockerfile도 일부 환경에 맞게 수정하였습니다 (Java, locale등)
+설치 요구사항
+1. K8s클러스터 구성
+2. Storage Class를 통해 Dynamic하게 PV가 생성될 수 있도록 구성 (StatefulSet 지원을 위한 설정)
+  - 테스트 환경에서는 Master에 NFS로 사용할 수 있게 설정
+  
+helm chart 위치
+wget https://sangkyu-test.github.io/helm-chart-repo/stable/voltdb-0.1.0.tgz
 
-다운로드 및 구성 순서
-https://www.voltdb.com/ 오른쪽 상단의 DOWNLOAD 버튼을 틀릭하면 개인정보를 넣는 부분이 나오면 작성을 하고 저장하면
-개인정보에 작성한 메일주소로 voltdb를 다운받을 수 있는 URL를 보내준다. 해당 URL클릭해서 다운로드 하면 된다.
-
-cd /opt/
-tar -zxvf voltdb-ent-9.2.2.tar.gz
-cd voltdb-ent-9.2.2/tools/kubernetes/
-
-bash voltdb-k8s-utils.sh config_template.cfg -B
-bash voltdb-k8s-utils.sh config_template.cfg -M
-bash voltdb-k8s-utils.sh config_template.cfg -C
-bash voltdb-k8s-utils.sh config_template.cfg -S
- 
--B: --build-voltdb-image Builds the VoltDB docker image using docker build
--M: --install-configmap Installs the configmap for VoltDB init using kubectl create configmap (both init-time and run-time)
--C: --configure-voltdb Generates a statefulset.yaml to deploy the VoltDB cluster using voltdb-statefulset.yaml as a master template
--S: --start-voltdb Deploys the VoltDB cluster and starts the nodes using kubectl scale/create
- 
-처음에 아래와 같이 설정하지 않은 상태에서 -B 옵션으로 build하게 되면 CLUSTER_NAME이 지정이 되어 있지 않다고 에러 발생한다.
-build하기 위해선 CLUSTER_NAME 지정을 해준 상태에서 진행해야 된다.
-export CLUSTER_NAME="voltdb"
-
--C 옵션으로 yaml 파일을 생성하면 CLUSTER_NAME으로 생성이 된다.
-voltdb.yaml
-해당 yaml 파일을 생성할 때 voltdb-statefulset.yaml 파일을 기준으로 생성을 하게된다.
-여기에서 주의할 점은 volumeClaimTemplates 의 하위에 storageClassName: <managed-nfs-storage>
-volumeClaimTemplates:
-- metadata:
-    name: voltdbroot
-  spec:
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: --pvolumeSize--
-    storageClassName: managed-nfs-storage <--- 해당부분에 storageClassName을 추가 해줘야 한다.
-    
 테스트 된 컨테이너 이미지 위치
 rokmclsk/test
 
@@ -50,16 +13,14 @@ rokmclsk/test
 config_template.cfg
 Dockerfile
 
-helm chart 위치
-wget https://sangkyu-test.github.io/helm-chart-repo/stable/voltdb-0.1.0.tgz
-
-
-성능테스트
+예제 어플리케이션을 통한 구동테스트
 테스트가 필요한 pod(ip/hostname)정보를 Master /etc/hosts에 설정필요 
 
+1. 
 cd /opt/voltdb-ent-9.2.2/examples/voter
 ../../bin/sqlcmd --servers=<pod hostname> < ddl.sql
 
+2. run.sh에서 수정이 필요한 부분(
 vi run.sh
 ...
 function async-benchmark() {
@@ -75,98 +36,5 @@ function async-benchmark() {
 ...
 
 ./run.sh client
---------------------------------------------------------------------------------
- Client Workload Statistics
---------------------------------------------------------------------------------
 
-10.42.0.1	volttest-0.volttest.default.svc.cluster.local	volttest-0
-10.39.0.1	volttest-1.volttest.default.svc.cluster.local	volttest-1
-10.36.0.0	volttest-2.volttest.default.svc.cluster.local	volttest-2
-
-./run.sh: Performing client...
---------------------------------------------------------------------------------
- Command Line Configuration
---------------------------------------------------------------------------------
-
-contestants = 6
-displayinterval = 5
-duration = 120
-latencyreport = false
-maxvotes = 2
-password = 
-ratelimit = 2147483647
-servers = volttest-0,volttest-1,volttest-2
-sslfile = 
-statsfile = 
-topologyaware = false
-user = 
-warmup = 5
-
---------------------------------------------------------------------------------
- Setup & Initialization
---------------------------------------------------------------------------------
-
-Connecting to VoltDB...
-Connected to VoltDB node at: volttest-1.
-Connected to VoltDB node at: volttest-2.
-Connected to VoltDB node at: volttest-0.
-
-Populating Static Tables
-
---------------------------------------------------------------------------------
- Starting Benchmark
---------------------------------------------------------------------------------
-
-Warming up...
-
-Running benchmark...
-00:00:05 Throughput 81798/s, Aborts/Failures 0/0
-00:00:10 Throughput 81961/s, Aborts/Failures 0/0
-00:00:15 Throughput 81034/s, Aborts/Failures 0/0
-00:00:20 Throughput 77821/s, Aborts/Failures 0/0
-00:00:25 Throughput 80812/s, Aborts/Failures 0/0
-00:00:30 Throughput 82470/s, Aborts/Failures 0/0
-00:00:35 Throughput 77430/s, Aborts/Failures 0/0
-00:00:40 Throughput 83286/s, Aborts/Failures 0/0
-00:00:45 Throughput 80380/s, Aborts/Failures 0/0
-00:00:50 Throughput 80755/s, Aborts/Failures 0/0
-00:00:55 Throughput 79649/s, Aborts/Failures 0/0
-00:01:00 Throughput 81050/s, Aborts/Failures 0/0
-00:01:05 Throughput 81833/s, Aborts/Failures 0/0
-00:01:10 Throughput 78209/s, Aborts/Failures 0/0
-00:01:15 Throughput 79307/s, Aborts/Failures 0/0
-00:01:20 Throughput 78751/s, Aborts/Failures 0/0
-00:01:25 Throughput 80411/s, Aborts/Failures 0/0
-00:01:30 Throughput 79245/s, Aborts/Failures 0/0
-00:01:35 Throughput 80487/s, Aborts/Failures 0/0
-00:01:40 Throughput 80628/s, Aborts/Failures 0/0
-00:01:45 Throughput 80223/s, Aborts/Failures 0/0
-00:01:50 Throughput 75351/s, Aborts/Failures 0/0
-00:01:55 Throughput 78647/s, Aborts/Failures 0/0
-
---------------------------------------------------------------------------------
- Voting Results
---------------------------------------------------------------------------------
-
-A total of 9,615,306 votes were received during the benchmark...
- - 9,519,357 Accepted
- -    95,932 Rejected (Invalid Contestant)
- -        17 Rejected (Maximum Vote Count Reached)
- -         0 Failed (Transaction Error)
-
-Contestant Name		Votes Received
-Edwina Burnam		     2,537,577
-Jessie Eichman		     2,104,158
-Alana Bregman		     1,476,748
-Jessie Alloway		     1,268,120
-Tabatha Gehling		     1,251,324
-Kelly Clauss		     1,168,316
-
-The Winner is: Edwina Burnam
-
---------------------------------------------------------------------------------
- Client Workload Statistics
---------------------------------------------------------------------------------
-
-Average throughput:               80,132 txns/sec
 
