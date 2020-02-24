@@ -46,9 +46,127 @@ volumeClaimTemplates:
 테스트 된 컨테이너 이미지 위치
 rokmclsk/test
 
+해당 컨네이너 이미지 생성할 때 수정한 파일도 git에 올렸습니다.
+config_template.cfg
+Dockerfile
+
 helm chart 위치
 wget https://sangkyu-test.github.io/helm-chart-repo/stable/voltdb-0.1.0.tgz
 
 
+성능테스트
+테스트가 필요한 pod(ip/hostname)정보를 Master /etc/hosts에 설정필요 
 
-   
+cd /opt/voltdb-ent-9.2.2/examples/voter
+../../bin/sqlcmd --servers=<pod hostname> < ddl.sql
+
+vi run.sh
+...
+function async-benchmark() {
+    jars-ifneeded
+    java -classpath voter-client.jar:$CLIENTCLASSPATH voter.AsyncBenchmark \
+        --displayinterval=5 \
+        --warmup=5 \
+        --duration=120 \
+        --servers=<voltdb-0> \       
+        --contestants=6 \
+        --maxvotes=2
+}
+...
+
+./run.sh client
+--------------------------------------------------------------------------------
+ Client Workload Statistics
+--------------------------------------------------------------------------------
+
+10.42.0.1	volttest-0.volttest.default.svc.cluster.local	volttest-0
+10.39.0.1	volttest-1.volttest.default.svc.cluster.local	volttest-1
+10.36.0.0	volttest-2.volttest.default.svc.cluster.local	volttest-2
+
+./run.sh: Performing client...
+--------------------------------------------------------------------------------
+ Command Line Configuration
+--------------------------------------------------------------------------------
+
+contestants = 6
+displayinterval = 5
+duration = 120
+latencyreport = false
+maxvotes = 2
+password = 
+ratelimit = 2147483647
+servers = volttest-0,volttest-1,volttest-2
+sslfile = 
+statsfile = 
+topologyaware = false
+user = 
+warmup = 5
+
+--------------------------------------------------------------------------------
+ Setup & Initialization
+--------------------------------------------------------------------------------
+
+Connecting to VoltDB...
+Connected to VoltDB node at: volttest-1.
+Connected to VoltDB node at: volttest-2.
+Connected to VoltDB node at: volttest-0.
+
+Populating Static Tables
+
+--------------------------------------------------------------------------------
+ Starting Benchmark
+--------------------------------------------------------------------------------
+
+Warming up...
+
+Running benchmark...
+00:00:05 Throughput 81798/s, Aborts/Failures 0/0
+00:00:10 Throughput 81961/s, Aborts/Failures 0/0
+00:00:15 Throughput 81034/s, Aborts/Failures 0/0
+00:00:20 Throughput 77821/s, Aborts/Failures 0/0
+00:00:25 Throughput 80812/s, Aborts/Failures 0/0
+00:00:30 Throughput 82470/s, Aborts/Failures 0/0
+00:00:35 Throughput 77430/s, Aborts/Failures 0/0
+00:00:40 Throughput 83286/s, Aborts/Failures 0/0
+00:00:45 Throughput 80380/s, Aborts/Failures 0/0
+00:00:50 Throughput 80755/s, Aborts/Failures 0/0
+00:00:55 Throughput 79649/s, Aborts/Failures 0/0
+00:01:00 Throughput 81050/s, Aborts/Failures 0/0
+00:01:05 Throughput 81833/s, Aborts/Failures 0/0
+00:01:10 Throughput 78209/s, Aborts/Failures 0/0
+00:01:15 Throughput 79307/s, Aborts/Failures 0/0
+00:01:20 Throughput 78751/s, Aborts/Failures 0/0
+00:01:25 Throughput 80411/s, Aborts/Failures 0/0
+00:01:30 Throughput 79245/s, Aborts/Failures 0/0
+00:01:35 Throughput 80487/s, Aborts/Failures 0/0
+00:01:40 Throughput 80628/s, Aborts/Failures 0/0
+00:01:45 Throughput 80223/s, Aborts/Failures 0/0
+00:01:50 Throughput 75351/s, Aborts/Failures 0/0
+00:01:55 Throughput 78647/s, Aborts/Failures 0/0
+
+--------------------------------------------------------------------------------
+ Voting Results
+--------------------------------------------------------------------------------
+
+A total of 9,615,306 votes were received during the benchmark...
+ - 9,519,357 Accepted
+ -    95,932 Rejected (Invalid Contestant)
+ -        17 Rejected (Maximum Vote Count Reached)
+ -         0 Failed (Transaction Error)
+
+Contestant Name		Votes Received
+Edwina Burnam		     2,537,577
+Jessie Eichman		     2,104,158
+Alana Bregman		     1,476,748
+Jessie Alloway		     1,268,120
+Tabatha Gehling		     1,251,324
+Kelly Clauss		     1,168,316
+
+The Winner is: Edwina Burnam
+
+--------------------------------------------------------------------------------
+ Client Workload Statistics
+--------------------------------------------------------------------------------
+
+Average throughput:               80,132 txns/sec
+
