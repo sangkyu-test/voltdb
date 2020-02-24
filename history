@@ -1,0 +1,7 @@
+https://www.voltdb.com/ 오른쪽 상단의 DOWNLOAD 버튼을 틀릭하면 개인정보를 넣는 부분이 나오면 작성을 하고 저장하면
+개인정보에 작성한 메일주소로 voltdb를 다운받을 수 있는 URL를 보내준다. 해당 URL클릭해서 다운로드 하면 된다.
+
+tar -zxvf voltdb-ent-9.2.2.tar.gz
+cd voltdb-ent-9.2.2/tools/kubernetes/
+kubernetes#
+
