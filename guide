@@ -1,7 +1,8 @@
 설치 요구사항
 1. K8s클러스터 구성
 2. Storage Class를 통해 Dynamic하게 PV가 생성될 수 있도록 구성 (StatefulSet 지원을 위한 설정)
-  - 테스트 환경에서는 Master에 NFS로 사용할 수 있게 설정
+  - 테스트 환경에서는 Master에 nfs-server 설정해서 구성
+  - Worker node엔 nfs-clinet 설정필요
   
 helm chart 위치
 wget https://sangkyu-test.github.io/helm-chart-repo/stable/voltdb-0.1.0.tgz
@@ -14,13 +15,13 @@ config_template.cfg
 Dockerfile
 
 예제 어플리케이션을 통한 구동테스트
-테스트가 필요한 pod(ip/hostname)정보를 Master /etc/hosts에 설정필요 
+테스트가 필요한 pod(ip/hostname)정보를 Master /etc/hosts에 설정필요
 
 1. 
 cd /opt/voltdb-ent-9.2.2/examples/voter
 ../../bin/sqlcmd --servers=<pod hostname> < ddl.sql
 
-2. run.sh에서 수정이 필요한 부분(
+2. run.sh에서 수정이 필요한 부분(--servers=<pod name>)
 vi run.sh
 ...
 function async-benchmark() {
@@ -29,7 +30,7 @@ function async-benchmark() {
         --displayinterval=5 \
         --warmup=5 \
         --duration=120 \
-        --servers=<voltdb-0> \       
+        --servers=<voltdb-0,voltdb-1,voltdb-2> \       
         --contestants=6 \
         --maxvotes=2
 }
