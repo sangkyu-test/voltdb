@@ -41,7 +41,7 @@ volumeClaimTemplates:
     resources:
       requests:
         storage: --pvolumeSize--
-    storageClassName: managed-nfs-storag <--- 해당부분에 storageClassName을 추가 해줘야 한다.
+    storageClassName: managed-nfs-storage <--- 해당부분에 storageClassName을 추가 해줘야 한다.
     
 테스트 된 컨테이너 이미지 위치
 rokmclsk/test
@@ -50,5 +50,5 @@ helm chart 위치
 wget https://sangkyu-test.github.io/helm-chart-repo/stable/voltdb-0.1.0.tgz
 
 
-      
+
    
