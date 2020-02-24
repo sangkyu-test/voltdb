@@ -36,6 +36,7 @@ function async-benchmark() {
 }
 ...
 
+3. 실행 명령어
 ./run.sh client
 
 
