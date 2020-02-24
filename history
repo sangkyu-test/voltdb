@@ -14,10 +14,10 @@ cd /opt/
 tar -zxvf voltdb-ent-9.2.2.tar.gz
 cd voltdb-ent-9.2.2/tools/kubernetes/
 
-bash voltdb-k8s-utils.sh CONFIG_FILE -B
-bash voltdb-k8s-utils.sh CONFIG_FILE -M
-bash voltdb-k8s-utils.sh CONFIG_FILE -C
-bash voltdb-k8s-utils.sh CONFIG_FILE -S
+bash voltdb-k8s-utils.sh config_template.cfg -B
+bash voltdb-k8s-utils.sh config_template.cfg -M
+bash voltdb-k8s-utils.sh config_template.cfg -C
+bash voltdb-k8s-utils.sh config_template.cfg -S
  
 -B: --build-voltdb-image Builds the VoltDB docker image using docker build
 -M: --install-configmap Installs the configmap for VoltDB init using kubectl create configmap (both init-time and run-time)
