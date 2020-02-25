@@ -42,7 +42,8 @@ function async-benchmark() {
 4. 어플리케이션 실행 명령어
 ./run.sh client
 
-5. voltdb 컨테이너와의 터널링 설정
+5. web접속을 위한 voltdb 컨테이너와의 터널링 설정
    - localhost <-> 컨테이너 아이피
+   - localhost:8081
    
 
