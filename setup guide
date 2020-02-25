@@ -17,8 +17,9 @@ Dockerfile
 예제 어플리케이션을 통한 구동테스트
 테스트가 필요한 pod(ip/hostname)정보를 Master /etc/hosts에 설정필요
 
-1. 
-cd /opt/voltdb-ent-9.2.2/examples/voter
+1. 구동테스트를 실행할 컨테이너에 접속해서 스키마 로딩 
+kubectl exec -it <pod hostname> -- bash
+cd voltdb-ent-9.2.2/examples/voter
 ../../bin/sqlcmd --servers=<pod hostname> < ddl.sql
 
 2. run.sh에서 수정이 필요한 부분(--servers=<pod name>)
