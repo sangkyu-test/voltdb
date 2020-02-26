@@ -142,7 +142,37 @@ pod(pvc)를 포함한 yaml 파일로 pod를 올릴 때  pvc에 지정한 storage
 마스터에서 kubeadm token create --print-join-command
 kubeadm join 192.168.11.102:6443 --token 6pdmn3.pemj5ff2smoqtktm     --discovery-token-ca-cert-hash sha256:2e2d23510d0ca466bbed8d7e0f600cccd12be2adc9ef8e58cc933aeca24cad03
 
-cd
+
+1. 구동테스트를 실행할 컨테이너에 접속해서 스키마 로딩 
+kubectl exec -it <pod hostname> -- bash
+cd voltdb-ent-9.2.2/examples/voter
+../../bin/sqlcmd --servers=<pod hostname> < ddl.sql
+
+2. run.sh에서 수정이 필요한 부분(--servers=<pod name>)
+vi run.sh
+...
+function async-benchmark() {
+    jars-ifneeded
+    java -classpath voter-client.jar:$CLIENTCLASSPATH voter.AsyncBenchmark \
+        --displayinterval=5 \
+        --warmup=5 \
+        --duration=120 \
+        --servers=<voltdb-0,voltdb-1,voltdb-2> \       
+        --contestants=6 \
+        --maxvotes=2
+}
+...
+3. web 실행명령어
+./run.sh webserver
+
+4. 어플리케이션 실행 명령어
+./run.sh client
+
+5. web접속을 위한 voltdb 컨테이너와의 터널링 설정
+   - localhost <-> 컨테이너 아이피
+   - localhost:8081
+   
+
 bash voltdb-k8s-utils.sh config.cfg -B
 bash voltdb-k8s-utils.sh config.cfg -M
 bash voltdb-k8s-utils.sh config.cfg -C
