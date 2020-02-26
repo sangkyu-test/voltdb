@@ -38,7 +38,7 @@ systemctl enable docker && systemctl start docker
 
 kubeadm init
 
-kubeadm join 172.16.0.214:6443 --token hg5vlq.af1kg0od698goe3u --discovery-token-ca-cert-hash sha256:2e2d23510d0ca466bbed8d7e0f600cccd12be2adc9ef8e58cc933aeca24cad03
+kubeadm join 172.16.0.214:6443 --token hg5vlq.af1kg0od698goe3u --discovery-token-ca-cert-hash XXXXX
 
 mkdir -p $HOME/.kube
 cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -88,8 +88,7 @@ yum install kubeadm docker -y
 systemctl enable kubelet && systemctl start kubelet
 systemctl enable docker && systemctl start docker
 
-kubeadm join 172.16.0.214:6443 --token hg5vlq.af1kg0od698goe3u --discovery-token-ca-cert-hash sha256:2e2d23510d0ca466bbed8d7e0f600cccd12be2adc9ef8e58cc933aeca24cad03
-
+kubeadm join 172.16.0.214:6443 --token hg5vlq.af1kg0od698goe3u --discovery-token-ca-cert-hash XXXXXX
 [root@kuber1m ~]# kubectl get nodes
 NAME      STATUS   ROLES    AGE     VERSION
 kuber1m   Ready    master   26h    v1.17.3
@@ -101,7 +100,7 @@ kuber3n   Ready    <none>   26h    v1.17.3
 Kubernetes master is running at https://172.16.0.214:6443
 KubeDNS is running at https://172.16.0.214:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
 
-===============================================================================================================================
+==========================================================================================================
 [Master node NFS Server install]
 yum install nfs-utils nfs-utils-lib
 systemctl enable nfs-server.service
@@ -125,10 +124,13 @@ mount -t nfs 192.168.11.102:/srv/nfs/kubedata /tmp
 
 ==========================================================================================================
 [Master node ]
-kubectl get clusterrole,clusterrolebinding,role,rolebinding | grep nfs
+wget https://github.com/sangkyu-test/voltdb/blob/master/rbac.yaml
+wget https://github.com/sangkyu-test/voltdb/blob/master/class.yaml
+wget https://github.com/sangkyu-test/voltdb/blob/master/deployment.yaml
+wget https://github.com/sangkyu-test/voltdb/blob/master/pvc-nfs.yaml.yaml
+wget https://github.com/sangkyu-test/voltdb/blob/master/4-busybox-pv-hostpath.yaml
 
 kubectl create -f rbac.yaml
-여기에 야물파일 다운로드 받을 수 있는 git 저장소의 위치를 지정해주자!
 
 [root@kuber1m yaml]# kubectl get clusterrole,clusterrolebinding,role,rolebinding | grep nfs
 clusterrole.rbac.authorization.k8s.io/nfs-client-provisioner-runner                                          4s
@@ -136,18 +138,17 @@ clusterrolebinding.rbac.authorization.k8s.io/run-nfs-client-provisioner         
 role.rbac.authorization.k8s.io/leader-locking-nfs-client-provisioner   4s
 rolebinding.rbac.authorization.k8s.io/leader-locking-nfs-client-provisioner   4s
 
-여기에 야물파일 다운로드 받을 수 있는 git 저장소의 위치를 지정해주자!
 kubectl create -f class.yaml
-storageClass 설정
+storageClassName을 지정해준다.
 
 kubectl create -f deployment.yaml
-nfs-server의 IP를 지정해주고 마운트위치를 지정해주면 된다.
+nfs-server의 IP를 지정해주고 마운트위치를 지정해준다.
 
-그리고  storageClass를 지정해서 pvc를 생성해서 할당요청을 하면 할당을 자동으로 해준다.
 kubectl create -f pvc-nfs.yaml
+그리고  storageClass를 지정해서 pvc를 생성해서 할당요청을 하면 할당을 자동으로 해준다.
 
-PVC를 이용해 pod를 생성하면 pv,pvc를 기준으로 올라간다.(미리 생성해둔 pv,pvc가 있다.)
 kubectl create -f 4-busybox-pv-hostpath.yaml
+PVC를 이용해 pod를 생성하면 pv,pvc를 기준으로 올라간다.(미리 생성해둔 pv,pvc가 있다.)
 
 pod(pvc)를 포함한 yaml 파일로 pod를 올릴 때  pvc에 지정한 storageClassName으로 할당을 자동으로 할 수 있다.
 
@@ -157,6 +158,7 @@ kubeadm join 192.168.11.102:6443 --token 6pdmn3.pemj5ff2smoqtktm     --discovery
 
 나중에 worker node를 추가할려면 해당 토큰이 24시간밖에 유효하지 않기 때문에 재 생성해서 노드를 추가해줘야 한다.
 마스터에서 kubeadm token create --print-join-command
+
 
 [VOLTDB]
 다운로드 및 구성 순서
@@ -172,10 +174,32 @@ bash voltdb-k8s-utils.sh config_template.cfg -M
 bash voltdb-k8s-utils.sh config_template.cfg -C
 bash voltdb-k8s-utils.sh config_template.cfg -S
 
-처음에 아래와 같이 설정하지 않은 상태에서 -B 옵션으로 build하게 되면 CLUSTER_NAME이 지정이 되어 있지 않다고 에러 발생한다.
+bash voltdb-k8s-utils.sh config_template.cfg -B -M -C -S
+
+-B: --build-voltdb-image Builds the VoltDB docker image using docker build
+-M: --install-configmap Installs the configmap for VoltDB init using kubectl create configmap (both init-time and run-time)
+-C: --configure-voltdb Generates a statefulset.yaml to deploy the VoltDB cluster using voltdb-statefulset.yaml as a master template
+-S: --start-voltdb Deploys the VoltDB cluster and starts the nodes using kubectl scale/create
+
+[voldtdb build시 발생하는 에러]
+1. 아래와 같이 설정하지 않은 상태에서 -B 옵션으로 build하게 되면 CLUSTER_NAME이 지정이 되어 있지 않다고 에러 발생한다.
 build하기 위해선 CLUSTER_NAME 지정을 해준 상태에서 진행해야 된다.
 export CLUSTER_NAME="voltdb"
 
+2. E:pakage 'oracle-java8-installer' has no installation candidate 이라는 에러가 발생하는데
+오라클에서 정책이 변경되어 자바가 유료화되면서 자동으로 설치할 수 없으므로 openjdk-8-jdk 로 대체한다.
+vi /opt/voltdb-ent-9.2.2/tools/kubernetes/docker/Dockerfile
+RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+RUN apt-get -y --no-install-recommends --no-install-suggests install oracle-java8-installer
+-> 대체할 명령어
+RUN apt-get -y --no-install-recommends --no-install-suggests install openjdk-8-jdk
+
+3. /bin/sh: 1: locale-gen: not found
+The command '/bin/sh -c locale-gen en_US.UTF-8' returned a non-zero code: 127
+해당 명령어 추가
+RUN apt-get clean && apt-get update && apt-get install -y locales
+
+[yaml파일 생성 하기 전 수정 해줘야 되는 부분] <-- 다시한번 확인하자!
 -C 옵션으로 yaml 파일을 생성하면 CLUSTER_NAME으로 생성이 된다.
 voltdb.yaml
 해당 yaml 파일을 생성할 때 voltdb-statefulset.yaml 파일을 기준으로 생성을 하게된다.
@@ -190,11 +214,6 @@ volumeClaimTemplates:
       requests:
         storage: --pvolumeSize--
     storageClassName: managed-nfs-storage <--- 해당부분에 storageClassName을 추가 해줘야 한다.
-
-
-
-
-
 
 
 [구동테스트]
@@ -227,8 +246,3 @@ function async-benchmark() {
    - localhost <-> 컨테이너 아이피
    - localhost:8081
    
-
-bash voltdb-k8s-utils.sh config.cfg -B
-bash voltdb-k8s-utils.sh config.cfg -M
-bash voltdb-k8s-utils.sh config.cfg -C
-bash voltdb-k8s-utils.sh config.cfg -S
