@@ -159,7 +159,7 @@ kubeadm join 192.168.11.102:6443 --token 6pdmn3.pemj5ff2smoqtktm     --discovery
 나중에 worker node를 추가할려면 해당 토큰이 24시간밖에 유효하지 않기 때문에 재 생성해서 노드를 추가해줘야 한다.
 마스터에서 kubeadm token create --print-join-command
 
-
+=============================================================================================================================
 [VOLTDB]
 다운로드 및 구성 순서
 https://www.voltdb.com/ 오른쪽 상단의 DOWNLOAD 버튼을 틀릭하면 개인정보를 넣는 부분이 나오면 작성을 하고 저장하면
@@ -215,7 +215,7 @@ volumeClaimTemplates:
         storage: --pvolumeSize--
     storageClassName: managed-nfs-storage <--- 해당부분에 storageClassName을 추가 해줘야 한다.
 
-
+=============================================================================================================================
 [구동테스트]
 1. 구동테스트를 실행할 컨테이너에 접속해서 스키마 로딩 
 kubectl exec -it <pod hostname> -- bash
@@ -245,4 +245,45 @@ function async-benchmark() {
 5. web접속을 위한 voltdb 컨테이너와의 터널링 설정
    - localhost <-> 컨테이너 아이피
    - localhost:8081
-   
+==============================================================================================================================
+[Master node helm install]
+wget https://github.com/sangkyu-test/voltdb/blob/master/tiller-account-rba.yaml
+
+kubectl apply -f tiller-account-rbac.yaml
+
+kubectl -n kube-system get deploy,replicaset,pod,serviceaccount,clusterrolebinding | grep tiller
+deployment.apps/tiller-deploy   0/1     1            0           27h
+replicaset.apps/tiller-deploy-765b65f946   1         1         0       27h
+pod/tiller-deploy-765b65f946-bvd4n                                        1/1     Running   1          27h
+serviceaccount/tiller                               1         27h
+clusterrolebinding.rbac.authorization.k8s.io/tiller                                                 27h
+
+kubectl get serviceaccount tiller -n kube-system
+NAME     SECRETS   AGE
+tiller   1         26h
+
+helm init --service-account=tiller \
+   --stable-repo-url=https://kubernetes-charts.storage.googleapis.com \
+   --upgrade \
+   --automount-service-account-token=true \
+   --replicas=1 \
+   --history-max=100 \
+   --wait
+
+ls ~/.helm 
+cache  plugins  repository  starters
+
+kubectl get deployment  -n kube-system
+kubectl get deployment tiller-deploy -n kube-system -o wide
+
+helm home
+/root/.helm
+
+helm repo list
+NAME  	URL                                             
+stable	https://kubernetes-charts.storage.googleapis.com
+local 	http://127.0.0.1:8879/charts  
+
+wget https://sangkyu-test.github.io/helm-chart-repo/stable/voltdb-0.1.0.tgz
+tar -zxvf voltdb-0.1.0.tgz
+
