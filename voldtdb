@@ -154,7 +154,7 @@ pod(pvc)를 포함한 yaml 파일로 pod를 올릴 때  pvc에 지정한 storage
 
 나중에 worker node를 추가할려면 해당 토큰이 24시간밖에 유효하지 않기 때문에 재 생성해서 노드를 추가해줘야 한다.
 마스터에서 kubeadm token create --print-join-command
-kubeadm join 192.168.11.102:6443 --token 6pdmn3.pemj5ff2smoqtktm     --discovery-token-ca-cert-hash sha256:2e2d23510d0ca466bbed8d7e0f600cccd12be2adc9ef8e58cc933aeca24cad03
+kubeadm join 192.168.11.102:6443 --token 6pdmn3.pemj5ff2smoqtktm     --discovery-token-ca-cert-hash XXXX
 
 나중에 worker node를 추가할려면 해당 토큰이 24시간밖에 유효하지 않기 때문에 재 생성해서 노드를 추가해줘야 한다.
 마스터에서 kubeadm token create --print-join-command
