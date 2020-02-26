@@ -1,9 +1,9 @@
 [Kubernetes MASTER NODE 환경 구성]
 vi /etc/hosts
 172.16.0.214	kuber1m
-172.16.1.55	kuber1n
-172.16.1.31	kuber3n
-172.16.3.80	kuber4n
+172.16.1.55	    kuber1n
+172.16.1.31	    kuber3n
+172.16.3.80	    kuber4n
 
 setenforce 0
 sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
@@ -60,9 +60,9 @@ kuber1m   Ready    master   3m25s   v1.17.3
 [Kubernetes WORKER NODE 환경 구성]
 vi /etc/hosts
 172.16.0.214	kuber1m
-172.16.1.55	kuber1n
-172.16.1.31	kuber3n
-172.16.3.80	kuber4n
+172.16.1.55	    kuber1n
+172.16.1.31	    kuber3n
+172.16.3.80	    kuber4n
 
 setenforce 0
 sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
@@ -90,8 +90,17 @@ systemctl enable docker && systemctl start docker
 
 kubeadm join 172.16.0.214:6443 --token hg5vlq.af1kg0od698goe3u --discovery-token-ca-cert-hash sha256:2e2d23510d0ca466bbed8d7e0f600cccd12be2adc9ef8e58cc933aeca24cad03
 
-여기에 노드 정상적으로 Reday상태인걸 복사해서 보여주자!
-kubectl cluster-info 결과값도
+[root@kuber1m ~]# kubectl get nodes
+NAME      STATUS   ROLES    AGE     VERSION
+kuber1m   Ready    master   26h    v1.17.3
+kuber1n   Ready    <none>   26h    v1.17.3
+kuber2n   Ready    <none>   26h    v1.17.3
+kuber3n   Ready    <none>   26h    v1.17.3
+
+[root@kuber1m ~]# kubectl cluster-info
+Kubernetes master is running at https://172.16.0.214:6443
+KubeDNS is running at https://172.16.0.214:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
 ===============================================================================================================================
 [Master node NFS Server install]
 yum install nfs-utils nfs-utils-lib
