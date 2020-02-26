@@ -312,6 +312,8 @@ git push origin master
 
 wget https://sangkyu-test.github.io/helm-chart-repo/stable/voltdb-0.1.0.tgz
 tar -zxvf voltdb-0.1.0.tgz
+yum install tree
+
 cd ~/voltdb
 voltdb# tree
 .
