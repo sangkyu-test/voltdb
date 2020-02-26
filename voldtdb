@@ -247,8 +247,19 @@ function async-benchmark() {
    - localhost:8081
 ==============================================================================================================================
 [Master node helm install]
-wget https://github.com/sangkyu-test/voltdb/blob/master/tiller-account-rba.yaml
+https://github.com/helm/helm/releases
+Installation and Upgrading -> Linux amd64 클릭으로 로컬에 다운로드해서 master node에 올려야 됨
 
+tar -zxvf helm-v3.1.1-linux-amd64.tar.gz
+cd linux-amd64
+mv helm /usr/local/bin/
+
+which helm
+/usr/local/bin/helm
+
+helm version --short client
+
+wget https://github.com/sangkyu-test/voltdb/blob/master/tiller-account-rbac.yaml
 kubectl apply -f tiller-account-rbac.yaml
 
 kubectl -n kube-system get deploy,replicaset,pod,serviceaccount,clusterrolebinding | grep tiller
@@ -282,8 +293,72 @@ helm home
 helm repo list
 NAME  	URL                                             
 stable	https://kubernetes-charts.storage.googleapis.com
-local 	http://127.0.0.1:8879/charts  
+local 	http://127.0.0.1:8879/charts 
+
+==============================================================================================================================
+ls /root/helm/
+charts  demo  README.md  stable
+
+cd /root/helm/charts/
+helm package voltdb
+
+mv voltdb-0.1.0.tgz ../stable/
+
+git add .
+git commit -m "demo chart add"
+git push origin master
 
 wget https://sangkyu-test.github.io/helm-chart-repo/stable/voltdb-0.1.0.tgz
 tar -zxvf voltdb-0.1.0.tgz
+cd ~/voltdb
+voltdb# tree
+.
+├── Chart.yaml
+└── templates
+    └── service.yaml
+
+1 directory, 2 files
+
+helm install --name voltdb .
+다운로드 받은 helm chart 파일로 voltdb 올리는 명령어
+
+해당 명령어 실행 후 pod의 상태가 계속 ContainerCreating 임을 확인
+
+ls /srv/nfs/kubedata/
+default-voltdbroot-voltdb-0-pvc-XXXX
+cd default-voltdbroot-voltdb-0-pvc-XXXX/
+
+cat voltdbk8s.log
+Warning  FailedScheduling  24m (x2 over 24m)    default-scheduler                                    error while running "VolumeBinding" filter plugin for pod "voltdb-0": pod has unbound immediate PersistentVolumeClaims
+  Normal   Scheduled         24m                  default-scheduler                                    Successfully assigned default/voltdb-0 to ip-172-31-10-88.eu-west-1.compute.internal
+  Warning  FailedMount       23m (x8 over 24m)    kubelet, ip-172-31-10-88.eu-west-1.compute.internal  MountVolume.SetUp failed for volume "voltdb-init-volume" : configmap "voltdb-init-configmap" not found
+  Warning  FailedMount       23m (x8 over 24m)    kubelet, ip-172-31-10-88.eu-west-1.compute.internal  MountVolume.SetUp failed for volume "voltdb-schema-volume" : configmap "voltdb-init-schema" not found
+  Warning  FailedMount       14m (x13 over 24m)   kubelet, ip-172-31-10-88.eu-west-1.compute.internal  MountVolume.SetUp failed for volume "voltdb-classes-volume" : configmap "voltdb-init-classes" not found
+  Warning  FailedMount       9m1s (x3 over 13m)   kubelet, ip-172-31-10-88.eu-west-1.compute.internal  Unable to attach or mount volumes: unmounted volumes=[voltdb-init-volume voltdb-classes-volume voltdb-schema-volume], unattached volumes=[voltdbroot voltdb-init-volume voltdb-classes-volume voltdb-schema-volume default-token-5vdnp]: timed out waiting for the condition
+  Warning  FailedMount       4m29s (x2 over 22m)  kubelet, ip-172-31-10-88.eu-west-1.compute.internal  Unable to attach or mount volumes: unmounted volumes=[voltdb-init-volume voltdb-classes-volume voltdb-schema-volume], unattached volumes=[default-token-5vdnp voltdbroot voltdb-init-volume voltdb-classes-volume voltdb-schema-volume]: timed out waiting for the condition
+
+위의 로그와 같이 configmap관련 에러가 발생함...
+
+예를 들면 2번의 구성이 빠진 상태라고 볼 수 있음
+1. bash voltdb-k8s-utils.sh config_template.cfg -B
+2. bash voltdb-k8s-utils.sh config_template.cfg -M (-M: --install-configmap Installs the configmap for VoltDB init using kubectl create configmap)
+3. bash voltdb-k8s-utils.sh config_template.cfg -C
+4. bash voltdb-k8s-utils.sh config_template.cfg -S
+
+지금 상태는 여기까지...
+개인적인 생각으로는 -C 옵션으로 생성된 yaml 파일에 configmap에 설정되는 값(?)들을 지정할 수 있다면 가장 좋을 것 같다.
+그런대 만약 이게 된다고 하더라도 다른 환경(voltdb 관련 configmap이 생성안된)에서 helml chart로 pod를 올릴려고 하면 
+역시 configmap 이 설정이 안되어 있으면 분명히 에러가 발생할 것이다.
+그런대 voltdb관련 configmap을 생성할려면 voltdb 설치파일이 있어야 생성이 가능하다.
+내가 혼자 테스트 하거나 내부에서 사용하는 디비라면 귀찮더라도 그렇게 설정을 하면 괜찮은데
+helm chart로 voltdb를 올리고 싶은 고객 입장에서는 여간 귀찮은 일이 아닐것이다.
+
+
+
+
+
+
+
+
+
 
