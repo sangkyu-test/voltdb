@@ -133,11 +133,11 @@ mount -t nfs 192.168.11.102:/srv/nfs/kubedata /tmp
 
 ==========================================================================================================
 [Master node ]
-wget https://github.com/sangkyu-test/voltdb/blob/master/rbac.yaml
-wget https://github.com/sangkyu-test/voltdb/blob/master/class.yaml
-wget https://github.com/sangkyu-test/voltdb/blob/master/deployment.yaml
-wget https://github.com/sangkyu-test/voltdb/blob/master/pvc-nfs.yaml
-wget https://github.com/sangkyu-test/voltdb/blob/master/4-busybox-pv-hostpath.yaml
+#wget https://github.com/sangkyu-test/voltdb/blob/master/rbac.yaml
+#wget https://github.com/sangkyu-test/voltdb/blob/master/class.yaml
+#wget https://github.com/sangkyu-test/voltdb/blob/master/deployment.yaml
+#wget https://github.com/sangkyu-test/voltdb/blob/master/pvc-nfs.yaml
+#wget https://github.com/sangkyu-test/voltdb/blob/master/4-busybox-pv-hostpath.yaml
 
 kubectl create -f rbac.yaml
 
