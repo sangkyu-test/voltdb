@@ -208,6 +208,12 @@ The command '/bin/sh -c locale-gen en_US.UTF-8' returned a non-zero code: 127
 해당 명령어 추가
 RUN apt-get clean && apt-get update && apt-get install -y locales
 
+4.Warning  Failed 1s kubelet, voltdb3n  Error: failed to start container "voltdb": 
+Error response from daemon: oci runtime error: container_linux.go:247: 
+starting container process caused "exec: \"voltdbk8s.py\": executable file not found in $PATH"
+실행권한이 없어서 발생하는 에러로 확인!
+chmod -R 755 /opt/voltdb-ent-9.2.2/tools/kubernetes/bin/
+
 [yaml파일 생성 하기 전 수정 해줘야 되는 부분] <-- 다시한번 확인하자!
 -C 옵션으로 yaml 파일을 생성하면 CLUSTER_NAME으로 생성이 된다.
 voltdb.yaml
