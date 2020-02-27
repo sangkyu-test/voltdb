@@ -90,6 +90,8 @@ yum install kubeadm docker -y
 systemctl enable kubelet && systemctl start kubelet
 systemctl enable docker && systemctl start docker
 
+echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
+
 kubeadm join 172.16.0.214:6443 --token hg5vlq.af1kg0od698goe3u --discovery-token-ca-cert-hash XXXXXX
 [root@kuber1m ~]# kubectl get nodes
 NAME      STATUS   ROLES    AGE     VERSION
