@@ -1,3 +1,5 @@
+OS : CentOS Linux release 7.7.1908 (Core)
+
 [Kubernetes MASTER NODE 환경 구성]
 vi /etc/hosts
 172.16.0.214	kuber1m
