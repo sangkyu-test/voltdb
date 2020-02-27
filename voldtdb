@@ -111,7 +111,7 @@ KubeDNS is running at https://172.16.0.214:6443/api/v1/namespaces/kube-system/se
 
 ==========================================================================================================
 [Master node NFS Server install]
-yum install nfs-utils nfs-utils-lib
+yum install nfs-utils nfs-utils-lib -y
 systemctl enable nfs-server.service
 systemctl start nfs-server.service
 
