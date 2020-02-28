@@ -40,6 +40,7 @@ systemctl enable docker && systemctl start docker
 
 kubeadm init
 
+node join 할 때 사용할 명령어
 kubeadm join 172.16.0.214:6443 --token hg5vlq.af1kg0od698goe3u --discovery-token-ca-cert-hash XXXXX
 
 mkdir -p $HOME/.kube
