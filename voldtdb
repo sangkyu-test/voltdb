@@ -374,7 +374,8 @@ Warning  FailedScheduling  24m (x2 over 24m)    default-scheduler               
 helm chart로 voltdb를 올리고 싶은 고객 입장에서는 여간 귀찮은 일이 아닐것이다.
 
 
-
+2020.02.07
+configmap
 
 
 
