@@ -275,7 +275,7 @@ which helm
 
 helm version --short client
 
-wget https://github.com/sangkyu-test/voltdb/blob/master/tiller-account-rbac.yaml
+wget https://raw.githubusercontent.com/sangkyu-test/voltdb/master/tiller-account-rbac.yaml
 kubectl apply -f tiller-account-rbac.yaml
 
 kubectl -n kube-system get deploy,replicaset,pod,serviceaccount,clusterrolebinding | grep tiller
