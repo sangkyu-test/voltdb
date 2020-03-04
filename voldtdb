@@ -243,7 +243,25 @@ starting container process caused "exec: \"voltdbk8s.py\": executable file not f
 실행권한이 없어서 발생하는 에러로 확인!
 chmod -R 755 /opt/voltdb-ent-9.2.2/tools/kubernetes/bin/
 
-[yaml파일 생성 하기 전 수정 해줘야 되는 부분] <-- 다시한번 확인하자!
+config_template.cfg 에 변경이 필요한 설정
+--ignore=thp 를 적용필요(voltdb 시작할 때 thp 설정 무시하고 올라가게 해야됨)
+vi /opt/voltdb-ent-9.2.2/tools/kubernetes/config_template.cfg
+# additional voltdb start command line args
+VOLTDB_START_ARGS="--ignore=thp"
+
+deployment.xml 파일을 통해 호스트 노드수와 k-facter 설정
+# location of the VoltDB deployment xml file (optional)
+DEPLOYMENT_FILE=deployment.xml
+
+vi deployment.xml
+<deployment>
+   <cluster hostcount="4" kfactor="1"/>
+   <httpd enabled="true">
+      <jsonapi enabled="true" />
+   </httpd>
+</deployment>
+
+[yaml파일 생성 하기 전 수정 해줘야 되는 부분]
 -C 옵션으로 yaml 파일을 생성하면 CLUSTER_NAME으로 생성이 된다.
 voltdb.yaml
 해당 yaml 파일을 생성할 때 voltdb-statefulset.yaml 파일을 기준으로 생성을 하게된다.
@@ -280,6 +298,10 @@ function async-benchmark() {
         --maxvotes=2
 }
 ...
+
+--servers=<voltdb-0,voltdb-1,voltdb-2> 부분에 voltdb-0,voltdb-1,voltdb-2에 해당하는 ip/hostname을 
+구동테스트를 실행하는 컨테이너의 /etc/hosts에 설정 해줘야 됨
+
 3. web 실행명령어
 ./run.sh webserver
 
@@ -288,7 +310,7 @@ function async-benchmark() {
 
 5. web접속을 위한 voltdb 컨테이너와의 터널링 설정
    - localhost <-> 컨테이너 아이피
-   - localhost:8081
+   - localhost:8081,21212,21211
 ==============================================================================================================================
 [Master node helm install]
 https://github.com/helm/helm/releases
@@ -348,13 +370,11 @@ charts  demo  README.md  stable
 cd /root/helm/charts/
 helm package voltdb
 
-mv voltdb-0.1.0.tgz ../stable/
-
 git add .
 git commit -m "demo chart add"
 git push origin master
 
-wget https://sangkyu-test.github.io/helm-chart-repo/stable/voltdb-0.1.0.tgz
+wget https://sangkyu-test.github.io/helm-chart-repo/voltdb-0.1.0.tgz
 tar -zxvf voltdb-0.1.0.tgz
 yum install tree
 
@@ -363,11 +383,12 @@ voltdb# tree
 .
 ├── Chart.yaml
 └── templates
+    ├── configmap.yaml
     └── service.yaml
 
-1 directory, 2 files
+1 directory, 3 files
 
-helm install --name voltdb .
+voltdb# helm install --name voltdb .
 다운로드 받은 helm chart 파일로 voltdb 올리는 명령어
 
 해당 명령어 실행 후 pod의 상태가 계속 ContainerCreating 임을 확인
@@ -397,9 +418,7 @@ Warning  FailedScheduling  24m (x2 over 24m)    default-scheduler               
 개인적인 생각으로는 -C 옵션으로 생성된 yaml 파일에 configmap에 설정되는 값(?)들을 지정할 수 있다면 가장 좋을 것 같다.
 그런대 만약 이게 된다고 하더라도 다른 환경(voltdb 관련 configmap이 생성안된)에서 helml chart로 pod를 올릴려고 하면 
 역시 configmap 이 설정이 안되어 있으면 분명히 에러가 발생할 것이다.
-그런대 voltdb관련 configmap을 생성할려면 voltdb 설치파일이 있어야 생성이 가능하다.
-내가 혼자 테스트 하거나 내부에서 사용하는 디비라면 귀찮더라도 그렇게 설정을 하면 괜찮은데
-helm chart로 voltdb를 올리고 싶은 고객 입장에서는 여간 귀찮은 일이 아닐것이다.
+그래서 cofigmap을 생성하는 yaml파일을 생성해서 환경설정 부분도 yaml파일 실행으로 적용되게 설정했다.
 
 
 2020.02.07
