@@ -283,7 +283,7 @@ volumeClaimTemplates:
 1. 구동테스트를 실행할 컨테이너에 접속해서 스키마 로딩 
 kubectl exec -it <pod hostname> -- bash
 cd voltdb-ent-9.2.2/examples/voter
-../../bin/sqlcmd --servers=<pod hostname> < ddl.sql
+../../bin/sqlcmd --servers=pod hostname < ddl.sql
 
 2. run.sh에서 수정이 필요한 부분(--servers=<pod name>)
 vi run.sh
@@ -294,7 +294,7 @@ function async-benchmark() {
         --displayinterval=5 \
         --warmup=5 \
         --duration=120 \
-        --servers=<voltdb-0,voltdb-1,voltdb-2> \       
+        --servers=voltdb-0,voltdb-1,voltdb-2 \       
         --contestants=6 \
         --maxvotes=2
 }
