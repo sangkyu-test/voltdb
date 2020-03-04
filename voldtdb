@@ -156,6 +156,7 @@ yum install nfs-utils nfs-utils-lib -y
 systemctl enable nfs-client.target
 systemctl start nfs-client.target
 
+어떤 worker node에 pod가 올라갈지 모르니까 전체의 worker node에서 NFS로 master node와 접근이 가능해야됨
 worker node에서 master node로 NFS 정상적으로 연결되는지 확인
 mount -t nfs 192.168.11.102:/srv/nfs/kubedata /tmp
 
