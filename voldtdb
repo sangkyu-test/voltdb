@@ -80,23 +80,32 @@ vi /etc/hosts
 172.16.1.31	kuber3n
 172.16.3.80	kuber4n
 
+selinux disable 하는 명령어
 setenforce 0
 sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
-init 6
 
+selinux 상태 확인 명령어
+sestatus
+getenforce
+
+리눅스 방화벽 disable 하는 명령어
 systemctl stop firewalld && systemctl disable firewalld && systemctl mask --now firewalld
 
+pod간의 통신을 위한 모듈 관련 설정(br_netfilter)
 cat <<EOF >  /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
 EOF
 
+추가한 설정 적용해주는 명령어
 sysctl --system
 
+스왑중지
 swapoff -a
 /etc/fstab 파일의 swap부분 주석처리
 #/dev/mapper/centos-swap swap                    swap    defaults        0 0
 
+kubernetes 저장소 정보 추가
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -107,10 +116,12 @@ repo_gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
 
+kubeadm, docker install
 yum install kubeadm docker -y 
 systemctl enable kubelet && systemctl start kubelet
 systemctl enable docker && systemctl start docker
 
+mater node에 worker node join
 kubeadm join 172.16.0.214:6443 --token hg5vlq.af1kg0od698goe3u --discovery-token-ca-cert-hash XXXXXX
 [root@kuber1m ~]# kubectl get nodes
 NAME      STATUS   ROLES    AGE     VERSION
@@ -129,13 +140,16 @@ yum install nfs-utils nfs-utils-lib -y
 systemctl enable nfs-server.service
 systemctl start nfs-server.service
 
+NFS mount 허용할 디렉터리 생성 및 권한부여
+mkdir /srv/nfs/kubedata -p
+chown nobody: /srv/nfs/kubedata
+
+NFS Server의 마운트디렉토리에 대한 설정
 vi /etc/exports
 /srv/nfs/kubedata *(rw,sync,no_subtree_check,no_root_squash,no_all_squash,insecure)
 exportfs -rav
 exportfs -v
 
-mkdir /srv/nfs/kubedata -p
-chown nobody: /srv/nfs/kubedata
 
 [worker node NFS client install]
 yum install nfs-utils nfs-utils-lib -y 
@@ -147,11 +161,14 @@ mount -t nfs 192.168.11.102:/srv/nfs/kubedata /tmp
 
 ==========================================================================================================
 [Master node ]
+
+Statefulset 환경을 NFS로 설정하기 위한 yaml 파일 다운로드
 wget https://raw.githubusercontent.com/sangkyu-test/voltdb/master/rbac.yaml
 wget https://raw.githubusercontent.com/sangkyu-test/voltdb/master/class.yaml
 wget https://raw.githubusercontent.com/sangkyu-test/voltdb/master/deployment.yaml
 wget https://raw.githubusercontent.com/sangkyu-test/voltdb/master/pvc-nfs.yaml
 wget https://raw.githubusercontent.com/sangkyu-test/voltdb/master/4-busybox-pv-hostpath.yaml
+
 
 kubectl create -f rbac.yaml
 
