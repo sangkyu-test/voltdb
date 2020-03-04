@@ -169,35 +169,33 @@ wget https://raw.githubusercontent.com/sangkyu-test/voltdb/master/deployment.yam
 wget https://raw.githubusercontent.com/sangkyu-test/voltdb/master/pvc-nfs.yaml
 wget https://raw.githubusercontent.com/sangkyu-test/voltdb/master/4-busybox-pv-hostpath.yaml
 
-
+RBAC(Role-based access control) 생성
 kubectl create -f rbac.yaml
 
+생성된 RBAC 확인
 [root@kuber1m yaml]# kubectl get clusterrole,clusterrolebinding,role,rolebinding | grep nfs
 clusterrole.rbac.authorization.k8s.io/nfs-client-provisioner-runner                                          4s
 clusterrolebinding.rbac.authorization.k8s.io/run-nfs-client-provisioner                             4s
 role.rbac.authorization.k8s.io/leader-locking-nfs-client-provisioner   4s
 rolebinding.rbac.authorization.k8s.io/leader-locking-nfs-client-provisioner   4s
 
+storageClassName을 지정
 kubectl create -f class.yaml
-storageClassName을 지정해준다.
 
+nfs-server의 IP를 지정해주고 마운트위치를 지정
 kubectl create -f deployment.yaml
-nfs-server의 IP를 지정해주고 마운트위치를 지정해준다.
 
+storageClass를 지정해서 pvc를 생성해 할당요청을 하면 자동으로 pv할당
 kubectl create -f pvc-nfs.yaml
-그리고  storageClass를 지정해서 pvc를 생성해서 할당요청을 하면 할당을 자동으로 해준다.
 
+위에서 생성한 PersistentVolumeClaim을 이용해 pod를 생성하면 생성되어 있는 pv,pvc를 기준으로 올라간다.
 kubectl create -f 4-busybox-pv-hostpath.yaml
-PVC를 이용해 pod를 생성하면 pv,pvc를 기준으로 올라간다.(미리 생성해둔 pv,pvc가 있다.)
 
-pod(pvc)를 포함한 yaml 파일로 pod를 올릴 때  pvc에 지정한 storageClassName으로 할당을 자동으로 할 수 있다.
+pod를 yaml 파일로 올릴 때  pvc에 지정한 storageClassName으로 할당을 자동으로 할 수 있다.
 
 나중에 worker node를 추가할려면 해당 토큰이 24시간밖에 유효하지 않기 때문에 재 생성해서 노드를 추가해줘야 한다.
 마스터에서 kubeadm token create --print-join-command
 kubeadm join 192.168.11.102:6443 --token 6pdmn3.pemj5ff2smoqtktm     --discovery-token-ca-cert-hash XXXX
-
-나중에 worker node를 추가할려면 해당 토큰이 24시간밖에 유효하지 않기 때문에 재 생성해서 노드를 추가해줘야 한다.
-마스터에서 kubeadm token create --print-join-command
 
 =============================================================================================================================
 [VOLTDB]
