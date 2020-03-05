@@ -315,14 +315,9 @@ function async-benchmark() {
 ==============================================================================================================================
 [Master node helm install]
 https://github.com/helm/helm/releases
-Installation and Upgrading -> Linux amd64 클릭으로 로컬에 다운로드해서 master node에 올려야 됨
-
+helm Installation
 curl -L https://git.io/get_helm.sh | bash
 helm version
-
-tar -zxvf helm-v3.1.1-linux-amd64.tar.gz
-cd linux-amd64
-mv helm /usr/local/bin/
 
 which helm
 /usr/local/bin/helm
