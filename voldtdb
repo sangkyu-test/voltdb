@@ -10,6 +10,7 @@ vi /etc/hosts
 selinux disable 하는 명령어
 setenforce 0
 sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
+init 6
 
 selinux 상태 확인 명령어
 sestatus
@@ -83,6 +84,7 @@ vi /etc/hosts
 selinux disable 하는 명령어
 setenforce 0
 sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
+init 6
 
 selinux 상태 확인 명령어
 sestatus
