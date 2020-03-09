@@ -352,15 +352,13 @@ wget https://raw.githubusercontent.com/sangkyu-test/voltdb/master/tiller-account
 kubectl apply -f tiller-account-rbac.yaml
 
 kubectl -n kube-system get deploy,replicaset,pod,serviceaccount,clusterrolebinding | grep tiller
-deployment.apps/tiller-deploy   0/1     1            0           27h
-replicaset.apps/tiller-deploy-765b65f946   1         1         0       27h
-pod/tiller-deploy-765b65f946-bvd4n                                        1/1     Running   1          27h
-serviceaccount/tiller                               1         27h
-clusterrolebinding.rbac.authorization.k8s.io/tiller                                                 27h
+serviceaccount/tiller                               1         15s
+clusterrolebinding.rbac.authorization.k8s.io/tiller                                                 15s
+
 
 kubectl get serviceaccount tiller -n kube-system
 NAME     SECRETS   AGE
-tiller   1         26h
+tiller   1         74s
 
 helm init --service-account=tiller \
    --stable-repo-url=https://kubernetes-charts.storage.googleapis.com \
@@ -369,6 +367,14 @@ helm init --service-account=tiller \
    --replicas=1 \
    --history-max=100 \
    --wait
+ 
+kubectl -n kube-system get deploy,replicaset,pod,serviceaccount,clusterrolebinding | grep tiller
+deployment.apps/tiller-deploy   1/1     1            1           37s
+replicaset.apps/tiller-deploy-765b65f946   1         1         1       37s
+pod/tiller-deploy-765b65f946-2jj6j     1/1     Running   0          37s
+serviceaccount/tiller                               1         2m16s
+clusterrolebinding.rbac.authorization.k8s.io/tiller                                                 2m16s
+
 
 ls ~/.helm 
 cache  plugins  repository  starters
