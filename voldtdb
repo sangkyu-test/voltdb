@@ -311,6 +311,14 @@ SERVERS="localhost" -> SERVERS="voltdb-0,voltdb-1,voltdb-2"
 
 
 3. web 실행명령어
+vi run.sh 해당 설정 추가해줘야 됨 
+
+# WEB SERVER variables
+WEB_PORT=8081
+function webserver() {
+    cd web; python -m SimpleHTTPServer $WEB_PORT
+}
+
 ./run.sh webserver
 
 4. 어플리케이션 실행 명령어
