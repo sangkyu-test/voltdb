@@ -302,8 +302,13 @@ function async-benchmark() {
 }
 ...
 
+(OR)
+SERVERS="localhost" -> SERVERS="voltdb-0,voltdb-1,voltdb-2"
+
 --servers=<voltdb-0,voltdb-1,voltdb-2> 부분에 voltdb-0,voltdb-1,voltdb-2에 해당하는 ip/hostname을 
 구동테스트를 실행하는 컨테이너의 /etc/hosts에 설정 해줘야 됨
+
+
 
 3. web 실행명령어
 ./run.sh webserver
