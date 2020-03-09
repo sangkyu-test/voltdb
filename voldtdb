@@ -360,6 +360,7 @@ kubectl get serviceaccount tiller -n kube-system
 NAME     SECRETS   AGE
 tiller   1         74s
 
+서버 애플리케이션이 kube-system 네임스페이스에 배포되고 tiller는 helm 명령을 사용할 수 있다.
 helm init --service-account=tiller \
    --stable-repo-url=https://kubernetes-charts.storage.googleapis.com \
    --upgrade \
