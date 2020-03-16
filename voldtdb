@@ -338,15 +338,14 @@ iptables -t nat -A PREROUTING -i ens33 -p tcp --dport 8081 -j DNAT --to-destinat
 iptables -t nat -A PREROUTING -i ens33 -p tcp --dport 8080 -j DNAT --to-destination 10.42.0.1
 ==============================================================================================================================
 [Master node helm install]
-https://github.com/helm/helm/releases
 helm Installation
 curl -L https://git.io/get_helm.sh | bash
-helm version
+
+helm version --short --client
+Client: v2.16.3+g1ee0254
 
 which helm
 /usr/local/bin/helm
-
-helm version --short --client
 
 wget https://raw.githubusercontent.com/sangkyu-test/voltdb/master/tiller-account-rbac.yaml
 kubectl apply -f tiller-account-rbac.yaml
@@ -354,7 +353,6 @@ kubectl apply -f tiller-account-rbac.yaml
 kubectl -n kube-system get deploy,replicaset,pod,serviceaccount,clusterrolebinding | grep tiller
 serviceaccount/tiller                               1         15s
 clusterrolebinding.rbac.authorization.k8s.io/tiller                                                 15s
-
 
 kubectl get serviceaccount tiller -n kube-system
 NAME     SECRETS   AGE
@@ -399,7 +397,6 @@ charts  demo  README.md  stable
 
 cd /root/helm/charts/
 helm package voltdb
-
 
 git add .
 git commit -m "demo chart add"
