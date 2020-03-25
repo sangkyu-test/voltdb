@@ -339,10 +339,10 @@ iptables -t nat -A PREROUTING -i ens33 -p tcp --dport 8080 -j DNAT --to-destinat
 ==============================================================================================================================
 [Master node helm install]
 helm Installation
-curl -L https://git.io/get_helm.sh | bash
+curl -L https://git.io/get_helm.sh | bash -s -- --version v2.14.3
 
 helm version --short --client
-Client: v2.16.3+g1ee0254
+Client: v2.14.3+g0e7f3b6
 
 which helm
 /usr/local/bin/helm
@@ -360,7 +360,7 @@ tiller   1         74s
 
 서버 애플리케이션이 kube-system 네임스페이스에 배포되고 tiller는 helm 명령을 사용할 수 있다.
 helm init --service-account=tiller \
-   --stable-repo-url=https://kubernetes-charts.storage.googleapis.com \
+   --tiller-image=gcr.io/kubernetes-helm/tiller:v2.14.3 \
    --upgrade \
    --automount-service-account-token=true \
    --replicas=1 \
